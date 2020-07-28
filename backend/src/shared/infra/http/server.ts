@@ -1,37 +1,45 @@
-import "reflect-metadata"
-import express, { Request, Response, NextFunction } from "express"
-import cors from "cors"
-import "express-async-errors"
+import 'reflect-metadata';
 
-import routes from "@shared/infra/http/routes"
-import uploadConfig from "@config/upload"
-import "@shared/infra/typeorm"
-import "@shared/container/index"
-import AppError from "@shared/errors/AppError"
+import express, { Request, Response, NextFunction } from 'express';
+import cors from 'cors';
+import 'express-async-errors';
 
-const app = express()
+import uploadConfig from '@config/upload';
+import AppError from '@shared/errors/AppError';
+import routes from './routes';
 
-app.use(cors())
-app.use(express.json())
-app.use("/files", express.static(uploadConfig.directory))
-app.use(routes)
+import '@shared/infra/typeorm';
 
-app.use((err: Error, request:Request, response:Response, next:NextFunction) => {
-    if(err instanceof AppError){
-        return response.status(err.statusCode).json({
-            status: "error",
-            message: err.message
-        })
+import '@shared/container';
+
+const app = express();
+
+app.use(cors());
+
+app.use(express.json());
+// Rota para acessar os arquivos na pasta
+app.use("/files", express.static(uploadConfig.tmpFolder));
+app.use(routes);
+
+app.use(
+  (error: Error, request: Request, response: Response, _: NextFunction) => {
+    if (error instanceof AppError) {
+      return response
+        .status(error.statusCode)
+        .json({ status: 'error', message: error.message });
     }
 
-    console.error(err)
+    // eslint-disable-next-line no-console
+    console.error(error);
 
     return response.status(500).json({
-        status: "error",
-        message: "Insternal Server Error"
-    })
-})
+      status: 'error',
+      message: 'Internal Server Error',
+    });
+  },
+);
 
 app.listen(3333, () => {
-    console.log("¯\\_(ツ)_/¯ Server started on port 3333!    ")
-})
+  // eslint-disable-next-line no-console
+  console.log('¯\\_(ツ)_/¯ Server started on port 3333!');
+});

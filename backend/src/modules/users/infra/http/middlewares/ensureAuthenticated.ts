@@ -1,36 +1,44 @@
-import { Request, Response, NextFunction } from "express"
-import {verify} from "jsonwebtoken"
+import { Response, Request, NextFunction } from 'express';
 
-import authConfig from "@config/auth"
-import AppError from "@shared/errors/AppError"
+import { verify } from 'jsonwebtoken';
 
-interface ITokenPayload{
-    iat: number,
-    exp: number,
-    sub: string
+import authConfig from '@config/auth';
+import AppError from '@shared/errors/AppError';
+
+interface TokenPayload {
+  iat: number;
+  exp: number;
+  sub: string;
 }
 
-export default function ensureAuthenticated(request:Request, response:Response, next:NextFunction): void{
-    const authHeader = request.headers.authorization
+export default function ensureAuthenticated(
+  request: Request,
+  response: Response,
+  next: NextFunction,
+): void {
+  // Validação token JWT
 
-    if(!authHeader){
-        throw new AppError("JWT token is missing", 401)
+  const authHeader = request.headers.authorization;
 
-    }
+  if (!authHeader) {
+    throw new AppError('JWT token is missing', 401);
+  }
 
-    const [,token] = authHeader.split(" ")
+  // Bearer asdwada
 
-    try{
-        const decoded = verify(token, authConfig.jwt.secret)
-        const { sub } = decoded as ITokenPayload
+  const [, token] = authHeader.split(' ');
 
-        request.user = {
-            id: sub,
-        }
+  try {
+    const decoded = verify(token, authConfig.jwt.secret);
 
-        return next()
-    } catch(err){
-        throw new AppError("invalid JWT token", 401)
+    const { sub } = decoded as TokenPayload;
 
-    }
+    request.user = {
+      id: sub,
+    };
+
+    return next();
+  } catch {
+    throw new AppError('Invalid JWT token', 401);
+  }
 }

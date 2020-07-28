@@ -1,11 +1,10 @@
-import { Router } from 'express'
-import SessionController from "@modules/users/infra/http/controllers/SessionsController"
+import { Router } from 'express';
 
+import SessionsController from '../controllers/SessionsController';
 
-const sessionsRouter = Router()
-const sessionController = new SessionController()
+const sessionsRouter = Router();
+const sessionsController = new SessionsController();
 
+sessionsRouter.post('/', sessionsController.create);
 
-sessionsRouter.post("/", sessionController.create)
-
-export default sessionsRouter
+export default sessionsRouter;
